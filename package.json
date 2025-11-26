@@ -75,7 +75,8 @@
     "zod": "^4.1.12",
     "pdf-parse": "^1.1.1",
     "@langchain/textsplitters": "1.0.1",
-    "@langchain/core": "1.0.1"
+    "@langchain/core": "1.0.1",
+    "pdfjs-dist": "^3.11.174"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
