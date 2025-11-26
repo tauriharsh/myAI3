@@ -34,8 +34,9 @@ const formSchema = z.object({
 });
 
 export default function ChatPage() {
-  // FIX 1: Cast to 'any' to stop TypeScript errors, and remove 'sendMessage'
-  const { messages, status, stop, setMessages, append } = useChat() as any;
+  // FIX 1: Removed 'sendMessage' (it doesn't exist). Added 'any' to fix TypeErrors.
+  const { messages, status, stop, append, setMessages } = useChat() as any;
+  
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -48,13 +49,15 @@ export default function ChatPage() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    // FIX 2: Use 'append' for the main input too (sendMessage is deprecated)
+    // FIX 2: Changed 'sendMessage' to 'append'
+    // This creates a user message and sends it to the API
     append({ role: 'user', content: data.message });
     form.reset();
   }
 
-  const handleSuggestion = (text: string) => {
-    console.log("Suggestion clicked:", text); // Debug check
+  const handleSuggestion = (e: React.MouseEvent, text: string) => {
+    e.preventDefault();
+    // FIX 3: Changed 'sendMessage' to 'append' here too
     append({ role: "user", content: text });
   };
 
@@ -133,10 +136,13 @@ export default function ChatPage() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 relative z-10">
-                      {/* ADDED 'cursor-pointer' and 'relative z-10' to ensure clickability */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 relative z-50">
                       
-                      <button onClick={() => handleSuggestion("What is the migration strategy for SAP ECC to S/4HANA?")} className="hero-card cursor-pointer hover:scale-[1.02] transition-transform">
+                      <button 
+                        type="button"
+                        onClick={(e) => handleSuggestion(e, "What is the migration strategy for SAP ECC to S/4HANA?")} 
+                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                      >
                         <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
                           <Database className="h-4 w-4" />
                           <span>SAP Strategy</span>
@@ -146,7 +152,11 @@ export default function ChatPage() {
                         </div>
                       </button>
 
-                      <button onClick={() => handleSuggestion("What are the file size limits for AWS Lambda layers?")} className="hero-card cursor-pointer hover:scale-[1.02] transition-transform">
+                      <button 
+                        type="button"
+                        onClick={(e) => handleSuggestion(e, "What are the file size limits for AWS Lambda layers?")} 
+                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                      >
                          <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
                           <Server className="h-4 w-4" />
                           <span>AWS Limits</span>
@@ -156,7 +166,11 @@ export default function ChatPage() {
                         </div>
                       </button>
 
-                       <button onClick={() => handleSuggestion("Analyze the security risks of public S3 buckets.")} className="hero-card cursor-pointer hover:scale-[1.02] transition-transform">
+                       <button 
+                        type="button"
+                        onClick={(e) => handleSuggestion(e, "Analyze the security risks of public S3 buckets.")} 
+                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                      >
                          <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
                           <ShieldAlert className="h-4 w-4" />
                           <span>Security Audit</span>
@@ -166,7 +180,11 @@ export default function ChatPage() {
                         </div>
                       </button>
 
-                       <button onClick={() => handleSuggestion("Show me the architecture diagram for AWS Serverless.")} className="hero-card cursor-pointer hover:scale-[1.02] transition-transform">
+                       <button 
+                        type="button"
+                        onClick={(e) => handleSuggestion(e, "Show me the architecture diagram for AWS Serverless.")} 
+                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                      >
                          <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
                           <FileText className="h-4 w-4" />
                           <span>Architecture</span>
@@ -192,9 +210,7 @@ export default function ChatPage() {
           </div>
 
           {/* FLOATING INPUT AREA */}
-          {/* FIX 3: Added 'pointer-events-none' to wrapper so it doesn't block clicks on cards behind it */}
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent z-20 pointer-events-none">
-            {/* Added 'pointer-events-auto' to the actual form so you can still type */}
             <div className="max-w-3xl mx-auto relative shadow-2xl rounded-2xl ring-1 ring-border/40 pointer-events-auto">
               <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex items-center gap-2 p-2 bg-card/80 backdrop-blur-xl rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                  <div className="flex-1 relative">
