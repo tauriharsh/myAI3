@@ -7,14 +7,6 @@ import { PINECONE_INDEX_NAME } from '@/config';
 
 export const runtime = 'nodejs';
 
-// CRITICAL: Increase payload size limit for large PDFs
-export const config = {
-  experimental: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-  },
-};
 
 const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
