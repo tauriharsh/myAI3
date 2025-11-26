@@ -4,7 +4,7 @@ import { openai } from "@ai-sdk/openai";
 import { wrapLanguageModel, extractReasoningMiddleware } from "ai";
 
 // Updated to gpt-4o for better reasoning on technical docs
-export const MODEL = openai('gpt-4.1-mini'); 
+export const MODEL = openai('gpt-4o-mini'); 
 
 function getDateAndTime(): string {
     const now = new Date();
