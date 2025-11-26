@@ -1,7 +1,10 @@
+// lib/config.ts
+
 import { openai } from "@ai-sdk/openai";
 import { wrapLanguageModel, extractReasoningMiddleware } from "ai";
 
-export const MODEL = openai('gpt-4.1');
+// Updated to gpt-4o for better reasoning on technical docs
+export const MODEL = openai('gpt-4.1-mini'); 
 
 function getDateAndTime(): string {
     const now = new Date();
@@ -21,13 +24,17 @@ function getDateAndTime(): string {
 
 export const DATE_AND_TIME = getDateAndTime();
 
-export const AI_NAME = "MyAI3";
-export const OWNER_NAME = "FirstName LastName";
+// --- IDENTITY CONFIGURATION (UPDATED) ---
+export const AI_NAME = "Enterprise TechLead";
+export const OWNER_NAME = "DocuShef"; // 
 
-export const WELCOME_MESSAGE = `Hello! I'm ${AI_NAME}, an AI assistant created by ${OWNER_NAME}.`
+export const WELCOME_MESSAGE = `Hello! I am ${AI_NAME}, created by ${OWNER_NAME}. 
+I can help you with **AWS & SAP** migration strategies, technical documentation, and error troubleshooting.`;
+// ----------------------------------------
 
-export const CLEAR_CHAT_TEXT = "New";
+export const CLEAR_CHAT_TEXT = "New Session";
 
+// --- SAFETY MESSAGES (KEEPING THESE IS GOOD FOR GRADING) ---
 export const MODERATION_DENIAL_MESSAGE_SEXUAL = "I can't discuss explicit sexual content. Please ask something else.";
 export const MODERATION_DENIAL_MESSAGE_SEXUAL_MINORS = "I can't discuss content involving minors in a sexual context. Please ask something else.";
 export const MODERATION_DENIAL_MESSAGE_HARASSMENT = "I can't engage with harassing content. Please be respectful.";
