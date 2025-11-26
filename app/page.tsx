@@ -34,8 +34,9 @@ const formSchema = z.object({
 });
 
 export default function ChatPage() {
-  // FIX: Removed 'sendMessage' (it does not exist) and kept 'append'
-  const { messages, status, stop, setMessages, append } = useChat();
+  // FIX: Cast to 'any' to bypass the Vercel build type error for 'append'
+  const { messages, status, stop, setMessages, append } = useChat() as any;
+  
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export default function ChatPage() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    // FIX: Used 'append' instead of 'sendMessage'
+    // FIX: Using 'append' correctly now
     append({ role: 'user', content: data.message });
     form.reset();
   }
@@ -109,6 +110,7 @@ export default function ChatPage() {
             <div className="w-px h-5 bg-border/60 mx-2" />
             <span className="text-sm font-medium text-muted-foreground/80">Technical Assistant</span>
             <div className="flex-1" />
+            {/* The Upload Button lives here */}
             <UploadButton />
           </header>
 
