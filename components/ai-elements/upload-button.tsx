@@ -19,7 +19,7 @@ const CONCURRENCY = 3;
 const MAX_RETRIES = 3;
 const RETRY_BASE_MS = 800;
 
-export default function UploadButton(): JSX.Element {
+export function UploadButton(): JSX.Element {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
