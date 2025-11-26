@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { OpenAI } from "openai";
+import { PINECONE_INDEX_NAME } from "@/config"; // Using your centralized config
 
 export const runtime = "nodejs";
 
@@ -13,12 +14,10 @@ const openai = new OpenAI({
 });
 
 // Config
-const INDEX_NAME = process.env.PINECONE_INDEX || "my-ai";
-const EMBEDDING_MODEL =
-  process.env.EMBEDDING_MODEL || "text-embedding-3-small";
+// FIX: Use the correct index name from your config, or fallback to 'my-openai'
+const INDEX_NAME = PINECONE_INDEX_NAME || "my-openai";
+const EMBEDDING_MODEL = "text-embedding-3-small";
 
-// ---- POST handler ----
-// This expects JSON text chunks, NOT PDFs.
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -32,18 +31,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Extra safety: Vercel body limit protection
-    if (text.length > 1_000_000) {
-      return NextResponse.json(
-        {
-          error: `Chunk too large (${text.length} chars). Reduce chunk size on the client.`,
-        },
-        { status: 413 }
-      );
-    }
-
     console.log(
-      `Embedding chunk ${chunk_index + 1}/${total_chunks} from ${filename}...`
+      `[Ingest] Embedding chunk ${chunk_index + 1}/${total_chunks} from ${filename}...`
     );
 
     // 1. Create embedding
@@ -57,6 +46,7 @@ export async function POST(req: Request) {
     // 2. Upsert to Pinecone
     const index = pinecone.index(INDEX_NAME);
 
+    // Create a unique ID for this chunk
     const vector_id = `${filename.replace(/\W/g, "_")}_chunk_${chunk_index}`;
 
     await index.upsert([
@@ -65,9 +55,10 @@ export async function POST(req: Request) {
         values: vector,
         metadata: {
           source_name: filename,
+          source_type: "user_upload", // Useful for filtering
           chunk_index,
           total_chunks,
-          text_preview: text.slice(0, 500),
+          text: text, // Store text so the bot can read it later
         },
       },
     ]);
@@ -75,17 +66,12 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       chunk_index,
-      total_chunks,
       id: vector_id,
     });
   } catch (error: any) {
-    console.error("Ingest chunk error:", error);
-
+    console.error("Ingestion Error:", error);
     return NextResponse.json(
-      {
-        error:
-          error?.message || "Failed to process chunk. See server logs for details.",
-      },
+      { error: error.message || "Failed to ingest chunk" },
       { status: 500 }
     );
   }
