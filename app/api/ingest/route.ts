@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 
 // CRITICAL: Increase payload size limit for large PDFs
 export const config = {
-  api: {
+  experimental: {
     bodyParser: {
       sizeLimit: '50mb',
     },
