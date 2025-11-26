@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,9 +34,8 @@ const formSchema = z.object({
 });
 
 export default function ChatPage() {
-  // FIX 1: Removed 'sendMessage' (it doesn't exist). Added 'any' to fix TypeErrors.
-  const { messages, status, stop, append, setMessages } = useChat() as any;
-  
+  // FIX: Use 'append' correctly
+  const { messages, status, stop, append, setMessages } = useChat();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -49,16 +48,22 @@ export default function ChatPage() {
   });
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    // FIX 2: Changed 'sendMessage' to 'append'
-    // This creates a user message and sends it to the API
+    if (!data.message.trim()) return;
+    // FIX: Logic restored to use append
     append({ role: 'user', content: data.message });
     form.reset();
   }
 
   const handleSuggestion = (e: React.MouseEvent, text: string) => {
     e.preventDefault();
-    // FIX 3: Changed 'sendMessage' to 'append' here too
     append({ role: "user", content: text });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.handleSubmit(onSubmit)();
+    }
   };
 
   return (
@@ -120,7 +125,7 @@ export default function ChatPage() {
           <div className="flex-1 overflow-y-auto p-4 scroll-smooth relative z-0">
              <div className="max-w-3xl mx-auto min-h-full flex flex-col">
                
-               {/* HERO DASHBOARD */}
+               {/* HERO DASHBOARD (Empty State) */}
                {isClient && messages.length === 0 ? (
                  <div className="flex-1 flex flex-col items-center justify-center -mt-20 animate-fade-in space-y-8">
                     
@@ -137,9 +142,8 @@ export default function ChatPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 relative z-50">
-                      
                       <button 
-                        type="button"
+                        type="button" 
                         onClick={(e) => handleSuggestion(e, "What is the migration strategy for SAP ECC to S/4HANA?")} 
                         className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
                       >
@@ -147,9 +151,7 @@ export default function ChatPage() {
                           <Database className="h-4 w-4" />
                           <span>SAP Strategy</span>
                         </div>
-                        <div className="text-xs text-muted-foreground/80">
-                          "How do I migrate SAP ECC to S/4HANA?"
-                        </div>
+                        <div className="text-xs text-muted-foreground/80">"How do I migrate SAP ECC to S/4HANA?"</div>
                       </button>
 
                       <button 
@@ -161,9 +163,7 @@ export default function ChatPage() {
                           <Server className="h-4 w-4" />
                           <span>AWS Limits</span>
                         </div>
-                        <div className="text-xs text-muted-foreground/80">
-                          "Check Lambda layer size limits."
-                        </div>
+                        <div className="text-xs text-muted-foreground/80">"Check Lambda layer size limits."</div>
                       </button>
 
                        <button 
@@ -175,9 +175,7 @@ export default function ChatPage() {
                           <ShieldAlert className="h-4 w-4" />
                           <span>Security Audit</span>
                         </div>
-                        <div className="text-xs text-muted-foreground/80">
-                          "Analyze public S3 bucket risks."
-                        </div>
+                        <div className="text-xs text-muted-foreground/80">"Analyze public S3 bucket risks."</div>
                       </button>
 
                        <button 
@@ -189,13 +187,12 @@ export default function ChatPage() {
                           <FileText className="h-4 w-4" />
                           <span>Architecture</span>
                         </div>
-                        <div className="text-xs text-muted-foreground/80">
-                          "Show me the serverless diagram."
-                        </div>
+                        <div className="text-xs text-muted-foreground/80">"Show me the serverless diagram."</div>
                       </button>
                     </div>
                  </div>
                ) : (
+                 // ACTIVE CHAT (Message Wall)
                  <div className="pb-32 pt-4">
                     <MessageWall messages={messages} status={status} />
                     {status === "submitted" && (
@@ -212,18 +209,27 @@ export default function ChatPage() {
           {/* FLOATING INPUT AREA */}
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent z-20 pointer-events-none">
             <div className="max-w-3xl mx-auto relative shadow-2xl rounded-2xl ring-1 ring-border/40 pointer-events-auto">
+              
               <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex items-center gap-2 p-2 bg-card/80 backdrop-blur-xl rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                  <div className="flex-1 relative">
-                   <Input
-                      {...form.register("message")}
-                      className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[52px] text-base pl-4 placeholder:text-muted-foreground/50"
-                      placeholder="Ask a technical question or upload a PDF..."
-                      disabled={status === "streaming"}
-                      autoComplete="off"
-                    />
+                   {/* FIX: Using Controller again for better form handling */}
+                   <Controller
+                      name="message"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[52px] text-base pl-4 placeholder:text-muted-foreground/50"
+                          placeholder="Ask a technical question or upload a PDF..."
+                          disabled={status === "streaming" || status === "submitted"}
+                          autoComplete="off"
+                          onKeyDown={handleKeyDown}
+                        />
+                      )}
+                   />
                  </div>
                   <div className="pr-2">
-                    {status === "streaming" ? (
+                    {status === "streaming" || status === "submitted" ? (
                        <Button size="icon" type="button" onClick={stop} variant="ghost" className="rounded-xl h-10 w-10 hover:bg-destructive/10 hover:text-destructive transition-colors">
                          <Square className="h-4 w-4 fill-current" />
                        </Button>
@@ -234,6 +240,7 @@ export default function ChatPage() {
                     )}
                   </div>
               </form>
+              
               <div className="text-center text-[10px] text-muted-foreground/50 mt-3 font-medium">
                 Confidential Enterprise Environment. Do not share sensitive customer PII.
               </div>
