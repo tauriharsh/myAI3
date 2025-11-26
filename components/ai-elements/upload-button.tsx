@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { UploadCloud, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
 
-// Configure pdfjs worker (uses CDN)
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
 
 /**
  * UploadButton
