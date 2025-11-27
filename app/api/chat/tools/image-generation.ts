@@ -24,11 +24,11 @@ Note: This generates visual images/diagrams, not just descriptions. For text-bas
   
   parameters: z.object({
     prompt: z.string().describe("The detailed prompt describing the image to generate. Be specific about technical details, architecture components, colors, and style. For technical diagrams, mention 'technical diagram', 'architecture diagram', 'flowchart', etc."),
-    size: z.enum(["1024x1024", "1792x1024", "1024x1792"]).optional().describe("Image size. Use 1792x1024 for wide diagrams/architectures"),
-    quality: z.enum(["standard", "hd"]).optional().describe("Image quality. Use 'hd' for detailed technical diagrams"),
+    size: z.enum(["1024x1024", "1792x1024", "1024x1792"]).optional().default("1024x1024").describe("Image size. Use 1792x1024 for wide diagrams/architectures"),
+    quality: z.enum(["standard", "hd"]).optional().default("standard").describe("Image quality. Use 'hd' for detailed technical diagrams"),
   }),
 
-  execute: async ({ prompt, size = "1024x1024", quality = "standard" }) => {
+  execute: async ({ prompt, size, quality }) => {
     try {
       console.log(`[Image Gen] Generating image: ${prompt.substring(0, 50)}...`);
       
