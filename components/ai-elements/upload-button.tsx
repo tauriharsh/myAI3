@@ -99,7 +99,7 @@ export function UploadButton() {
         
         {/* CSS Tooltip */}
         <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-          Upload technical documentation (PDF only, max 4MB)
+          Upload Technical Doc(Max 4MB)
           <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-900"></div>
         </div>
       </div>
