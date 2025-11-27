@@ -25,7 +25,7 @@ function getDateAndTime(): string {
 export const DATE_AND_TIME = getDateAndTime();
 
 // --- IDENTITY CONFIGURATION (UPDATED) ---
-export const AI_NAME = "Enterprise TechLead";
+export const AI_NAME = "A.S.A.P";
 export const OWNER_NAME = "DocuShef"; // 
 
 export const WELCOME_MESSAGE = `Hello! I am ${AI_NAME}, created by ${OWNER_NAME}. 
