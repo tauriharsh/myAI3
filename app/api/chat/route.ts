@@ -4,7 +4,6 @@ import { SYSTEM_PROMPT } from '@/prompts';
 import { isContentFlagged } from '@/lib/moderation';
 import { webSearch } from './tools/web-search';
 import { vectorDatabaseSearch } from './tools/search-vector-database';
-import { imageGeneration } from './tools/image-generation';
 
 export const maxDuration = 60;
 export async function POST(req: Request) {
@@ -66,7 +65,6 @@ export async function POST(req: Request) {
         tools: {
             webSearch,
             vectorDatabaseSearch,
-            imageGeneration,
         },
         stopWhen: stepCountIs(10),
         providerOptions: {
