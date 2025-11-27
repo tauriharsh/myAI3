@@ -1,142 +1,119 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { UploadCloud, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
-const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB chunks (safely under 4.5MB limit)
+import { Paperclip, Check, Loader2, AlertCircle } from "lucide-react";
+import { useState } from "react";
 
 export function UploadButton() {
   const [isUploading, setIsUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed.");
-      return;
-    }
-
-    // Check file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      setUploadError("Only PDF files are supported");
+      setTimeout(() => setUploadError(null), 3000);
       return;
     }
 
     setIsUploading(true);
-    setProgress(0);
+    setUploadError(null);
+    setUploadSuccess(false);
 
     try {
-      // Step 1: Read file as ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      const totalSize = arrayBuffer.byteLength;
-      const chunks: Blob[] = [];
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // Step 2: Split into chunks
-      for (let offset = 0; offset < totalSize; offset += CHUNK_SIZE) {
-        const chunk = arrayBuffer.slice(offset, offset + CHUNK_SIZE);
-        chunks.push(new Blob([chunk], { type: "application/octet-stream" }));
-      }
-
-      console.log(`Uploading ${file.name} in ${chunks.length} chunks...`);
-
-      // Step 3: Upload each chunk to single endpoint
-      const chunkIds: string[] = [];
-      for (let i = 0; i < chunks.length; i++) {
-        const formData = new FormData();
-        formData.append("chunk", chunks[i]);
-        formData.append("filename", file.name);
-        formData.append("chunkIndex", i.toString());
-        formData.append("totalChunks", chunks.length.toString());
-
-        const res = await fetch("/api/ingest", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!res.ok) {
-          const error = await res.text();
-          throw new Error(`Chunk ${i + 1} failed: ${error}`);
-        }
-
-        const data = await res.json();
-        chunkIds.push(data.chunkId);
-
-        // Update progress
-        const progressPercent = Math.round(((i + 1) / chunks.length) * 50); // 50% for upload
-        setProgress(progressPercent);
-      }
-
-      // Step 4: Process the complete file (same endpoint)
-      toast.info("Processing PDF...", { duration: 2000 });
-      
-      const processRes = await fetch("/api/ingest", {
+      const response = await fetch("/api/ingest", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          chunkIds,
-          totalChunks: chunks.length,
-        }),
+        body: formData,
       });
 
-      if (!processRes.ok) {
-        const error = await processRes.text();
-        throw new Error(`Processing failed: ${error}`);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Upload failed");
       }
 
-      const result = await processRes.json();
+      // Success!
+      setUploadedFileName(file.name);
+      setUploadSuccess(true);
       
-      setProgress(100);
-      toast.success(`Success! Added ${result.totalChunks} chunks from ${file.name}.`);
-      
-    } catch (error: any) {
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setUploadSuccess(false);
+        setUploadedFileName(null);
+      }, 5000);
+
+      // Reset input
+      e.target.value = "";
+    } catch (error) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload document.");
+      setUploadError(error instanceof Error ? error.message : "Upload failed");
+      setTimeout(() => setUploadError(null), 3000);
     } finally {
       setIsUploading(false);
-      setProgress(0);
-      e.target.value = ""; // Reset input
     }
   };
 
   return (
-    <div className="relative">
-      <input
-        type="file"
-        id="file-upload"
-        accept=".pdf"
-        className="hidden"
-        onChange={handleFileChange}
-        disabled={isUploading}
-      />
-      <label htmlFor="file-upload">
-        <Button
-          variant="secondary"
-          size="default"
-          className="cursor-pointer gap-2 border shadow-sm hover:bg-accent h-10 px-4"
-          asChild
+    <div className="flex items-center gap-2">
+      <div className="relative">
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={handleFileUpload}
+          className="absolute inset-0 opacity-0 cursor-pointer"
           disabled={isUploading}
+          id="pdf-upload"
+        />
+        <Button
+          variant="outline"
+          size="default"
+          disabled={isUploading}
+          className="gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm h-10 px-4 text-sm font-medium"
+          asChild
         >
-          <span>
+          <label htmlFor="pdf-upload" className="cursor-pointer">
             {isUploading ? (
               <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="text-sm font-medium">{progress}%</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : uploadSuccess ? (
+              <>
+                <Check className="h-4 w-4 text-green-600" />
+                Uploaded
               </>
             ) : (
               <>
-                <UploadCloud className="h-5 w-5" />
-                <span className="font-medium">Upload PDF</span>
+                <Paperclip className="h-4 w-4" />
+                Upload PDF
               </>
             )}
-          </span>
+          </label>
         </Button>
-      </label>
+      </div>
+
+      {/* Success Message */}
+      {uploadSuccess && uploadedFileName && (
+        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-left-2">
+          <Check className="h-4 w-4" />
+          <span className="font-medium">{uploadedFileName}</span>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {uploadError && (
+        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-left-2">
+          <AlertCircle className="h-4 w-4" />
+          <span>{uploadError}</span>
+        </div>
+      )}
     </div>
   );
 }
