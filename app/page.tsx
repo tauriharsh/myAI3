@@ -8,11 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useChat } from "@ai-sdk/react";
 import { 
   ArrowUp, Square, Loader2, Plus, 
-  Sparkles, FileText, Code, Database
+  Sparkles, Shield, Code, Server
 } from "lucide-react";
 import { MessageWall } from "@/components/messages/message-wall";
 import { UploadButton } from "@/components/ai-elements/upload-button";
-import { AI_NAME } from "@/config";
 import { useState, useEffect } from "react";
 
 const formSchema = z.object({
@@ -65,8 +64,8 @@ export default function ChatPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">{AI_NAME}</h2>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">AI Assistant</p>
+            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P.</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">AWS SAP Accelerated Professional</p>
           </div>
         </div>
         
@@ -99,7 +98,7 @@ export default function ChatPage() {
                   <Sparkles className="h-12 w-12 text-white" />
                 </div>
                 <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  Welcome to {AI_NAME}
+                  Welcome to A.S.A.P.
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-lg max-w-[600px] mx-auto">
                   Your intelligent assistant for AWS, SAP, and technical documentation. Ask me anything!
@@ -108,50 +107,50 @@ export default function ChatPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl px-4">
                 <button 
-                  onClick={(e) => handleSuggestion(e, "What is the migration strategy for SAP ECC to S/4HANA?")} 
+                  onClick={(e) => handleSuggestion(e, "What are the key considerations for migrating from SAP ECC to S/4HANA on AWS?")} 
                   className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <Database className="h-7 w-7 text-blue-600 dark:text-blue-400 mb-4" />
+                    <Server className="h-7 w-7 text-blue-600 dark:text-blue-400 mb-4" />
                     <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP Migration</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Learn about ECC to S/4HANA migration strategies</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Migrate SAP ECC to S/4HANA on AWS</div>
                   </div>
                 </button>
 
                 <button 
-                  onClick={(e) => handleSuggestion(e, "What are the file size limits for AWS Lambda layers?")} 
+                  onClick={(e) => handleSuggestion(e, "How do I configure AWS Lambda layers for SAP integration? What are the size limits?")} 
                   className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
                     <Code className="h-7 w-7 text-purple-600 dark:text-purple-400 mb-4" />
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">AWS Lambda</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Check Lambda layer size limits and configurations</div>
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">AWS Lambda Config</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Configure Lambda for SAP integration</div>
                   </div>
                 </button>
 
                 <button 
-                  onClick={(e) => handleSuggestion(e, "Analyze the security risks of public S3 buckets.")} 
+                  onClick={(e) => handleSuggestion(e, "What are the security best practices for running SAP workloads on AWS? Focus on VPC, IAM, and encryption.")} 
                   className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <FileText className="h-7 w-7 text-red-600 dark:text-red-400 mb-4" />
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">Security Audit</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">Analyze public S3 bucket security risks</div>
+                    <Shield className="h-7 w-7 text-red-600 dark:text-red-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP Security on AWS</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Security best practices for SAP on AWS</div>
                   </div>
                 </button>
 
                 <button 
-                  onClick={(e) => handleSuggestion(e, "Show me the architecture diagram for AWS Serverless.")} 
+                  onClick={(e) => handleSuggestion(e, "Show me a reference architecture for deploying SAP HANA on AWS with high availability and disaster recovery.")} 
                   className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <div className="relative">
-                    <Sparkles className="h-7 w-7 text-green-600 dark:text-green-400 mb-4" />
-                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">Architecture</div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">View serverless architecture diagrams</div>
+                    <Server className="h-7 w-7 text-green-600 dark:text-green-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP HANA Architecture</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">High-availability SAP HANA on AWS</div>
                   </div>
                 </button>
               </div>
@@ -163,7 +162,7 @@ export default function ChatPage() {
               {status === "submitted" && (
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm mt-4">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Thinking...</span>
+                  <span>Analyzing...</span>
                 </div>
               )}
             </div>
@@ -184,7 +183,7 @@ export default function ChatPage() {
                   <Input
                     {...field}
                     className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[56px] text-base pl-6 pr-4 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                    placeholder="Ask me anything..."
+                    placeholder="Ask about AWS, SAP, or upload technical documentation..."
                     disabled={status === "streaming" || status === "submitted"}
                     autoComplete="off"
                     onKeyDown={handleKeyDown}
@@ -216,7 +215,7 @@ export default function ChatPage() {
           </form>
           
           <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-4 font-medium">
-            {AI_NAME} can make mistakes. Please verify important information.
+            A.S.A.P. can make mistakes. Please verify important information.
           </div>
         </div>
       </div>
