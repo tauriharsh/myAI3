@@ -28,7 +28,7 @@ export const DATE_AND_TIME = getDateAndTime();
 export const AI_NAME = "A.S.A.P";
 export const OWNER_NAME = "DocuShef"; // 
 
-export const WELCOME_MESSAGE = `Hello! I'm A.S.A.P. (AWS SAP Accelerated Professional), your intelligent assistant for AWS, SAP migration and technical documentation. How can I help you today?`;
+export const WELCOME_MESSAGE = `Hello! I'm A.S.A.P (AWS SAP Accelerated Professional), your intelligent assistant for AWS, SAP migration and technical documentation. How can I help you today?`;
 // ----------------------------------------
 
 export const CLEAR_CHAT_TEXT = "New Session";
