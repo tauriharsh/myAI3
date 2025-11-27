@@ -7,26 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChat } from "@ai-sdk/react";
 import { 
-  ArrowUp, Square, Loader2, Plus, MessageSquare, 
-  Server, Database, ShieldAlert, FileText, Zap, LayoutGrid
+  ArrowUp, Square, Loader2, Plus, 
+  Sparkles, Shield, Code, Server
 } from "lucide-react";
 import { MessageWall } from "@/components/messages/message-wall";
 import { UploadButton } from "@/components/ai-elements/upload-button";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { AI_NAME, OWNER_NAME } from "@/config";
 import { useState, useEffect } from "react";
 
 const formSchema = z.object({
@@ -34,7 +19,6 @@ const formSchema = z.object({
 });
 
 export default function ChatPage() {
-  // FIX: Changed from 'append' to 'sendMessage' to actually hit the API
   const { messages, status, stop, sendMessage, setMessages } = useChat();
   const [isClient, setIsClient] = useState(false);
 
@@ -49,14 +33,12 @@ export default function ChatPage() {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     if (!data.message.trim()) return;
-    // FIX: Using sendMessage instead of append - this actually calls your API
     sendMessage({ text: data.message });
     form.reset();
   }
 
   const handleSuggestion = (e: React.MouseEvent, text: string) => {
     e.preventDefault();
-    // FIX: Using sendMessage here too
     sendMessage({ text });
   };
 
@@ -67,188 +49,176 @@ export default function ChatPage() {
     }
   };
 
+  const handleNewSession = () => {
+    setMessages([]);
+    form.reset();
+  };
+
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans selection:bg-primary/10">
+    <div className="flex flex-col h-screen w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden font-sans">
+      
+      {/* HEADER BAR */}
+      <header className="flex h-16 shrink-0 items-center justify-between gap-4 px-6 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">AWS SAP Accelerated Professional</p>
+          </div>
+        </div>
         
-        {/* --- LEFT SIDEBAR --- */}
-        <Sidebar className="border-r border-border/40 bg-muted/30">
-          <SidebarHeader className="p-5 border-b border-border/40">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary ring-1 ring-primary/20">
-                <Zap className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold leading-none tracking-tight">{AI_NAME}</h2>
-                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Enterprise Edition</p>
-              </div>
-            </div>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => window.location.reload()} className="hover:bg-primary/5 transition-colors">
-                      <Plus className="mr-2 text-primary/80" />
-                      <span className="font-medium">New Session</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton disabled className="opacity-50">
-                      <LayoutGrid className="mr-2" />
-                      <span>Templates</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-          <SidebarFooter className="p-4 border-t border-border/40 text-xs text-muted-foreground/60 font-medium">
-             Licensed to {OWNER_NAME}
-          </SidebarFooter>
-        </Sidebar>
+        <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <Button
+              onClick={handleNewSession}
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              New Session
+            </Button>
+          )}
+          <UploadButton />
+        </div>
+      </header>
 
-        {/* --- MAIN CONTENT --- */}
-        <main className="flex-1 flex flex-col h-full relative bg-grid-pattern">
+      {/* MAIN CHAT AREA */}
+      <div className="flex-1 overflow-y-auto p-6 scroll-smooth relative z-0">
+        <div className="max-w-4xl mx-auto min-h-full flex flex-col">
           
-          {/* HEADER BAR */}
-          <header className="flex h-16 shrink-0 items-center gap-2 px-4 z-10 glass-panel sticky top-0">
-            <SidebarTrigger />
-            <div className="w-px h-5 bg-border/60 mx-2" />
-            <span className="text-sm font-medium text-muted-foreground/80">Technical Assistant</span>
-            <div className="flex-1" />
-            <UploadButton />
-          </header>
-
-          {/* CHAT AREA */}
-          <div className="flex-1 overflow-y-auto p-4 scroll-smooth relative z-0">
-             <div className="max-w-3xl mx-auto min-h-full flex flex-col">
-               
-               {/* HERO DASHBOARD (Empty State) */}
-               {isClient && messages.length === 0 ? (
-                 <div className="flex-1 flex flex-col items-center justify-center -mt-20 animate-fade-in space-y-8">
-                    
-                    <div className="text-center space-y-2">
-                      <div className="h-20 w-20 bg-gradient-to-tr from-primary/20 to-blue-500/20 rounded-3xl flex items-center justify-center mb-6 mx-auto ring-1 ring-border shadow-xl">
-                        <Server className="h-10 w-10 text-primary" />
-                      </div>
-                      <h1 className="text-3xl font-semibold tracking-tight">
-                        Welcome back, {OWNER_NAME}
-                      </h1>
-                      <p className="text-muted-foreground text-base max-w-[500px] mx-auto">
-                        I can help you plan AWS migrations, debug SAP errors, or analyze your uploaded documents.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 relative z-50">
-                      <button 
-                        type="button" 
-                        onClick={(e) => handleSuggestion(e, "What is the migration strategy for SAP ECC to S/4HANA?")} 
-                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                        <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
-                          <Database className="h-4 w-4" />
-                          <span>SAP Strategy</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground/80">"How do I migrate SAP ECC to S/4HANA?"</div>
-                      </button>
-
-                      <button 
-                        type="button"
-                        onClick={(e) => handleSuggestion(e, "What are the file size limits for AWS Lambda layers?")} 
-                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                         <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
-                          <Server className="h-4 w-4" />
-                          <span>AWS Limits</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground/80">"Check Lambda layer size limits."</div>
-                      </button>
-
-                       <button 
-                        type="button"
-                        onClick={(e) => handleSuggestion(e, "Analyze the security risks of public S3 buckets.")} 
-                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                         <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
-                          <ShieldAlert className="h-4 w-4" />
-                          <span>Security Audit</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground/80">"Analyze public S3 bucket risks."</div>
-                      </button>
-
-                       <button 
-                        type="button"
-                        onClick={(e) => handleSuggestion(e, "Show me the architecture diagram for AWS Serverless.")} 
-                        className="hero-card cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                         <div className="flex items-center gap-2 text-sm font-medium group-hover:text-primary transition-colors">
-                          <FileText className="h-4 w-4" />
-                          <span>Architecture</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground/80">"Show me the serverless diagram."</div>
-                      </button>
-                    </div>
-                 </div>
-               ) : (
-                 // ACTIVE CHAT (Message Wall)
-                 <div className="pb-32 pt-4">
-                    <MessageWall messages={messages} status={status} />
-                    {status === "submitted" && (
-                      <div className="flex items-center gap-2 text-muted-foreground text-sm mt-4 ml-4 animate-pulse">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Analyzing...</span>
-                      </div>
-                    )}
-                 </div>
-               )}
-             </div>
-          </div>
-
-          {/* FLOATING INPUT AREA */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent z-20 pointer-events-none">
-            <div className="max-w-3xl mx-auto relative shadow-2xl rounded-2xl ring-1 ring-border/40 pointer-events-auto">
+          {/* HERO / EMPTY STATE */}
+          {isClient && messages.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
               
-              <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex items-center gap-2 p-2 bg-card/80 backdrop-blur-xl rounded-2xl focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                 <div className="flex-1 relative">
-                   <Controller
-                      name="message"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[52px] text-base pl-4 placeholder:text-muted-foreground/50"
-                          placeholder="Ask a technical question or upload a PDF..."
-                          disabled={status === "streaming" || status === "submitted"}
-                          autoComplete="off"
-                          onKeyDown={handleKeyDown}
-                        />
-                      )}
-                   />
-                 </div>
-                  <div className="pr-2">
-                    {status === "streaming" || status === "submitted" ? (
-                       <Button size="icon" type="button" onClick={stop} variant="ghost" className="rounded-xl h-10 w-10 hover:bg-destructive/10 hover:text-destructive transition-colors">
-                         <Square className="h-4 w-4 fill-current" />
-                       </Button>
-                    ) : (
-                       <Button size="icon" type="submit" className="rounded-xl h-10 w-10 shadow-sm transition-transform active:scale-95">
-                         <ArrowUp className="h-5 w-5" />
-                       </Button>
-                    )}
+              <div className="text-center space-y-4">
+                <div className="h-24 w-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl shadow-blue-500/30">
+                  <Sparkles className="h-12 w-12 text-white" />
+                </div>
+                <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                  Welcome to A.S.A.P
+                </h1>
+                <p className="text-slate-600 dark:text-slate-400 text-lg max-w-[600px] mx-auto">
+                  Your intelligent assistant for AWS, SAP, and technical documentation. Ask me anything!
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl px-4">
+                <button 
+                  onClick={(e) => handleSuggestion(e, "What are the key considerations for migrating from SAP ECC to S/4HANA on AWS?")} 
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Server className="h-7 w-7 text-blue-600 dark:text-blue-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP Migration</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Migrate SAP ECC to S/4HANA on AWS</div>
                   </div>
-              </form>
-              
-              <div className="text-center text-[10px] text-muted-foreground/50 mt-3 font-medium">
-                Confidential Enterprise Environment. Do not share sensitive customer PII.
+                </button>
+
+                <button 
+                  onClick={(e) => handleSuggestion(e, "How do I configure AWS Lambda layers for SAP integration? What are the size limits?")} 
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Code className="h-7 w-7 text-purple-600 dark:text-purple-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">AWS Lambda Config</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Configure Lambda for SAP integration</div>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={(e) => handleSuggestion(e, "What are the security best practices for running SAP workloads on AWS? Focus on VPC, IAM, and encryption.")} 
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Shield className="h-7 w-7 text-red-600 dark:text-red-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP Security on AWS</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Security best practices for SAP on AWS</div>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={(e) => handleSuggestion(e, "Show me a reference architecture for deploying SAP HANA on AWS with high availability and disaster recovery.")} 
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <Server className="h-7 w-7 text-green-600 dark:text-green-400 mb-4" />
+                    <div className="text-base font-semibold text-slate-900 dark:text-white mb-2">SAP HANA Architecture</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">High-availability SAP HANA on AWS</div>
+                  </div>
+                </button>
               </div>
             </div>
-          </div>
-
-        </main>
+          ) : (
+            // ACTIVE CHAT
+            <div className="pb-32 pt-4">
+              <MessageWall messages={messages} status={status} />
+              {status === "submitted" && (
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm mt-4">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Analyzing...</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </SidebarProvider>
+
+      {/* FLOATING INPUT AREA */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 dark:to-transparent z-20 pointer-events-none">
+        <div className="max-w-4xl mx-auto relative pointer-events-auto">
+          
+          <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div className="flex-1 relative">
+              <Controller
+                name="message"
+                control={form.control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    className="w-full border-0 bg-transparent shadow-none focus-visible:ring-0 min-h-[56px] text-base pl-6 pr-4 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    placeholder="Ask about AWS, SAP, or upload technical documentation..."
+                    disabled={status === "streaming" || status === "submitted"}
+                    autoComplete="off"
+                    onKeyDown={handleKeyDown}
+                  />
+                )}
+              />
+            </div>
+            <div className="pr-2">
+              {status === "streaming" || status === "submitted" ? (
+                <Button 
+                  size="icon" 
+                  type="button" 
+                  onClick={stop} 
+                  variant="ghost" 
+                  className="rounded-xl h-12 w-12 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  <Square className="h-5 w-5 fill-current" />
+                </Button>
+              ) : (
+                <Button 
+                  size="icon" 
+                  type="submit" 
+                  className="rounded-xl h-12 w-12 bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                >
+                  <ArrowUp className="h-5 w-5 text-white" />
+                </Button>
+              )}
+            </div>
+          </form>
+          
+          <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-4 font-medium">
+            A.S.A.P can make mistakes. Please verify important information.
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
