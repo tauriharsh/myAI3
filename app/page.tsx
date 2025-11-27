@@ -64,7 +64,7 @@ export default function ChatPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P.</h2>
+            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P</h2>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">AWS SAP Accelerated Professional</p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function ChatPage() {
                   <Sparkles className="h-12 w-12 text-white" />
                 </div>
                 <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  Welcome to A.S.A.P.
+                  Welcome to A.S.A.P
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-lg max-w-[600px] mx-auto">
                   Your intelligent assistant for AWS, SAP, and technical documentation. Ask me anything!
@@ -215,7 +215,7 @@ export default function ChatPage() {
           </form>
           
           <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-4 font-medium">
-            A.S.A.P. can make mistakes. Please verify important information.
+            A.S.A.P can make mistakes. Please verify important information.
           </div>
         </div>
       </div>
