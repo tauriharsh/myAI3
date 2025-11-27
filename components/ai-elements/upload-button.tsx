@@ -20,10 +20,10 @@ export function UploadButton() {
       return;
     }
 
-    // Check file size (max 4MB as per user requirement)
-    const maxSize = 4 * 1024 * 1024;
+    // Check file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error(`File too large. Maximum size is 4MB, you uploaded ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      toast.error(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`);
       return;
     }
 
@@ -92,7 +92,7 @@ export function UploadButton() {
       const result = await processRes.json();
       
       setProgress(100);
-      toast.success(`Success! Learned from ${result.totalChunks} sections in ${file.name}.`);
+      toast.success(`Success! Added ${result.totalChunks} chunks from ${file.name}.`);
       
     } catch (error: any) {
       console.error("Upload error:", error);
@@ -105,7 +105,7 @@ export function UploadButton() {
   };
 
   return (
-    <div className="relative group">
+    <div className="relative">
       <input
         type="file"
         id="file-upload"
@@ -137,10 +137,6 @@ export function UploadButton() {
           </span>
         </Button>
       </label>
-      {/* Simple CSS tooltip - no dependencies needed */}
-      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-popover text-popover-foreground text-xs rounded-md border shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-        Upload technical documentation (PDF only, max 4MB)
-      </div>
     </div>
   );
 }
