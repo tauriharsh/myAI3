@@ -1,78 +1,142 @@
-import { NextResponse } from "next/server";
-import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAI } from "openai";
-import { PINECONE_INDEX_NAME } from "@/config"; // Using your centralized config
+"use client";
 
-export const runtime = "nodejs";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { UploadCloud, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-// Initialize clients
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB chunks (safely under 4.5MB limit)
 
-// Config
-// FIX: Use the correct index name from your config, or fallback to 'my-openai'
-const INDEX_NAME = PINECONE_INDEX_NAME || "my-openai";
-const EMBEDDING_MODEL = "text-embedding-3-small";
+export function UploadButton() {
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { text, filename, chunk_index, total_chunks } = body || {};
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    // Validation
-    if (!text || !filename) {
-      return NextResponse.json(
-        { error: "Missing 'text' or 'filename' in request body." },
-        { status: 400 }
-      );
+    if (file.type !== "application/pdf") {
+      toast.error("Only PDF files are allowed.");
+      return;
     }
 
-    console.log(
-      `[Ingest] Embedding chunk ${chunk_index + 1}/${total_chunks} from ${filename}...`
-    );
+    // Check file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      return;
+    }
 
-    // 1. Create embedding
-    const embeddingResponse = await openai.embeddings.create({
-      model: EMBEDDING_MODEL,
-      input: text,
-    });
+    setIsUploading(true);
+    setProgress(0);
 
-    const vector = embeddingResponse.data[0].embedding;
+    try {
+      // Step 1: Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const totalSize = arrayBuffer.byteLength;
+      const chunks: Blob[] = [];
 
-    // 2. Upsert to Pinecone
-    const index = pinecone.index(INDEX_NAME);
+      // Step 2: Split into chunks
+      for (let offset = 0; offset < totalSize; offset += CHUNK_SIZE) {
+        const chunk = arrayBuffer.slice(offset, offset + CHUNK_SIZE);
+        chunks.push(new Blob([chunk], { type: "application/octet-stream" }));
+      }
 
-    // Create a unique ID for this chunk
-    const vector_id = `${filename.replace(/\W/g, "_")}_chunk_${chunk_index}`;
+      console.log(`Uploading ${file.name} in ${chunks.length} chunks...`);
 
-    await index.upsert([
-      {
-        id: vector_id,
-        values: vector,
-        metadata: {
-          source_name: filename,
-          source_type: "user_upload", // Useful for filtering
-          chunk_index,
-          total_chunks,
-          text: text, // Store text so the bot can read it later
-        },
-      },
-    ]);
+      // Step 3: Upload each chunk to single endpoint
+      const chunkIds: string[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        const formData = new FormData();
+        formData.append("chunk", chunks[i]);
+        formData.append("filename", file.name);
+        formData.append("chunkIndex", i.toString());
+        formData.append("totalChunks", chunks.length.toString());
 
-    return NextResponse.json({
-      success: true,
-      chunk_index,
-      id: vector_id,
-    });
-  } catch (error: any) {
-    console.error("Ingestion Error:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to ingest chunk" },
-      { status: 500 }
-    );
-  }
+        const res = await fetch("/api/ingest", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(`Chunk ${i + 1} failed: ${error}`);
+        }
+
+        const data = await res.json();
+        chunkIds.push(data.chunkId);
+
+        // Update progress
+        const progressPercent = Math.round(((i + 1) / chunks.length) * 50); // 50% for upload
+        setProgress(progressPercent);
+      }
+
+      // Step 4: Process the complete file (same endpoint)
+      toast.info("Processing PDF...", { duration: 2000 });
+      
+      const processRes = await fetch("/api/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          chunkIds,
+          totalChunks: chunks.length,
+        }),
+      });
+
+      if (!processRes.ok) {
+        const error = await processRes.text();
+        throw new Error(`Processing failed: ${error}`);
+      }
+
+      const result = await processRes.json();
+      
+      setProgress(100);
+      toast.success(`Success! Added ${result.totalChunks} chunks from ${file.name}.`);
+      
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload document.");
+    } finally {
+      setIsUploading(false);
+      setProgress(0);
+      e.target.value = ""; // Reset input
+    }
+  };
+
+  return (
+    <div className="relative">
+      <input
+        type="file"
+        id="file-upload"
+        accept=".pdf"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={isUploading}
+      />
+      <label htmlFor="file-upload">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="cursor-pointer gap-2 border shadow-sm hover:bg-accent"
+          asChild
+          disabled={isUploading}
+        >
+          <span>
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-xs">{progress}%</span>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="h-4 w-4" />
+                Upload PDF
+              </>
+            )}
+          </span>
+        </Button>
+      </label>
+    </div>
+  );
 }
