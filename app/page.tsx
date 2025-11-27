@@ -64,7 +64,7 @@ export default function ChatPage() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P</h2>
+            <h2 className="text-base font-bold leading-none tracking-tight text-slate-900 dark:text-white">A.S.A.P.</h2>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">AWS SAP Accelerated Professional</p>
           </div>
         </div>
@@ -91,21 +91,21 @@ export default function ChatPage() {
           
           {/* HERO / EMPTY STATE */}
           {isClient && messages.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+            <div className="flex-1 flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500 pb-40">
               
               <div className="text-center space-y-4">
                 <div className="h-24 w-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-2xl shadow-blue-500/30">
                   <Sparkles className="h-12 w-12 text-white" />
                 </div>
                 <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  Welcome to A.S.A.P
+                  Welcome to A.S.A.P.
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-lg max-w-[600px] mx-auto">
                   Your intelligent assistant for AWS, SAP, and technical documentation. Ask me anything!
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl px-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl px-4 pb-8">
                 <button 
                   onClick={(e) => handleSuggestion(e, "What are the key considerations for migrating from SAP ECC to S/4HANA on AWS?")} 
                   className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 text-left"
@@ -171,7 +171,7 @@ export default function ChatPage() {
       </div>
 
       {/* FLOATING INPUT AREA */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 dark:to-transparent z-20 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95 dark:to-transparent z-20 pointer-events-none">
         <div className="max-w-4xl mx-auto relative pointer-events-auto">
           
           <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex items-center gap-2 p-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700">
@@ -215,7 +215,7 @@ export default function ChatPage() {
           </form>
           
           <div className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-4 font-medium">
-            A.S.A.P can make mistakes. Please verify important information.
+            A.S.A.P. can make mistakes. Please verify important information.
           </div>
         </div>
       </div>
