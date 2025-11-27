@@ -56,9 +56,9 @@ export async function POST(req: Request) {
 
     console.log(`[Ingest] Processing PDF: ${file.name}`);
 
-    // Convert file to buffer
+    // Convert file to buffer (using Buffer.from to avoid deprecation warning)
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = Buffer.from(new Uint8Array(arrayBuffer));
 
     // Parse PDF
     const pdfData = await pdf(buffer);
