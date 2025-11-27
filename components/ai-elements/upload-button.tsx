@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { UploadCloud, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB chunks (safely under 4.5MB limit)
+
 export function UploadButton() {
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -17,27 +20,86 @@ export function UploadButton() {
       return;
     }
 
+    // Check file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`File too large. Maximum size is 50MB, got ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      return;
+    }
+
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    setProgress(0);
 
     try {
-      const res = await fetch("/api/ingest", {
+      // Step 1: Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const totalSize = arrayBuffer.byteLength;
+      const chunks: Blob[] = [];
+
+      // Step 2: Split into chunks
+      for (let offset = 0; offset < totalSize; offset += CHUNK_SIZE) {
+        const chunk = arrayBuffer.slice(offset, offset + CHUNK_SIZE);
+        chunks.push(new Blob([chunk], { type: "application/octet-stream" }));
+      }
+
+      console.log(`Uploading ${file.name} in ${chunks.length} chunks...`);
+
+      // Step 3: Upload each chunk
+      const chunkIds: string[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        const formData = new FormData();
+        formData.append("chunk", chunks[i]);
+        formData.append("filename", file.name);
+        formData.append("chunkIndex", i.toString());
+        formData.append("totalChunks", chunks.length.toString());
+
+        const res = await fetch("/api/ingest/upload-chunk", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(`Chunk ${i + 1} failed: ${error}`);
+        }
+
+        const data = await res.json();
+        chunkIds.push(data.chunkId);
+
+        // Update progress
+        const progressPercent = Math.round(((i + 1) / chunks.length) * 50); // 50% for upload
+        setProgress(progressPercent);
+      }
+
+      // Step 4: Process the complete file
+      toast.info("Processing PDF...", { duration: 2000 });
+      
+      const processRes = await fetch("/api/ingest/process", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          chunkIds,
+          totalChunks: chunks.length,
+        }),
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!processRes.ok) {
+        const error = await processRes.text();
+        throw new Error(`Processing failed: ${error}`);
+      }
 
-      // FIX: Cast to 'any' to avoid TypeScript 'unknown' error
-      const data = (await res.json()) as any;
+      const result = await processRes.json();
       
-      toast.success(`Success! Added ${data.chunks} chunks from ${file.name}.`);
-    } catch (error) {
-      toast.error("Failed to ingest document.");
-      console.error(error);
+      setProgress(100);
+      toast.success(`Success! Added ${result.totalChunks} chunks from ${file.name}.`);
+      
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload document.");
     } finally {
       setIsUploading(false);
+      setProgress(0);
       e.target.value = ""; // Reset input
     }
   };
@@ -62,11 +124,16 @@ export function UploadButton() {
         >
           <span>
             {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-xs">{progress}%</span>
+              </>
             ) : (
-              <UploadCloud className="h-4 w-4" />
+              <>
+                <UploadCloud className="h-4 w-4" />
+                Upload PDF
+              </>
             )}
-            {isUploading ? "Learning..." : "Upload PDF"}
           </span>
         </Button>
       </label>
