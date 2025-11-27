@@ -117,21 +117,21 @@ export function UploadButton() {
       <label htmlFor="file-upload">
         <Button
           variant="secondary"
-          size="sm"
-          className="cursor-pointer gap-2 border shadow-sm hover:bg-accent"
+          size="default"
+          className="cursor-pointer gap-2 border shadow-sm hover:bg-accent h-10 px-4"
           asChild
           disabled={isUploading}
         >
           <span>
             {isUploading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-xs">{progress}%</span>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-sm font-medium">{progress}%</span>
               </>
             ) : (
               <>
-                <UploadCloud className="h-4 w-4" />
-                Upload PDF
+                <UploadCloud className="h-5 w-5" />
+                <span className="font-medium">Upload PDF</span>
               </>
             )}
           </span>
